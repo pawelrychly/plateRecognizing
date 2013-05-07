@@ -140,7 +140,7 @@ int main( int argc, char** argv )
 	imshow( "Source", src );
 	namedWindow( "remove_green", CV_WINDOW_AUTOSIZE );
 	imshow( "remove_green", res3 );
-
+	//test
 
 	//bitwise_and(src, mask, src);
 	//Mat im_gray;
