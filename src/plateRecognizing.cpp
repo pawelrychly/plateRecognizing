@@ -50,7 +50,7 @@ void maxNeighbour(Mat img, Mat &dst) {
 	    }
 	}
 }*/
-
+/*
 void open_img(Mat src, Mat &dst, Mat element ){
 	erode(src, dst, element);
 	dilate(dst, dst, element);
@@ -71,7 +71,7 @@ void black_top_hat(Mat src, Mat &dst, Mat element ){
 	close_img(src, dst, element);
 	dst = dst - src;
 }
-
+*/
 void removeGreen(Mat src, Mat &res){
 	Mat mask;
 	inRange(src, cv::Scalar(100, 110, 0), cv::Scalar(255, 255,160), mask);
@@ -125,21 +125,51 @@ void removeLowGreen(Mat src, Mat &res){
 
 
 /** @function main */
+/*
 int main( int argc, char** argv )
 {
-	Mat mask;
-	Mat res;
-	Mat res2;
-	Mat res3;
+
+	Mat src_hls;
 	Mat src = imread( argv[1], CV_LOAD_IMAGE_COLOR );
-	removeDarkBlue(src, res);
-	removeBlue(res, res2);
-	removeLightBlue(res2, res3);
-	Mat ones = Mat::ones(9, 9, CV_8U);
+	Mat src_light;
+
+	Mat grad_x;
+	cvtColor(src,src_hls,CV_BGR2HLS);
+	Mat src_mask(src.rows,src.cols, CV_8UC3, Scalar(0,255,0));
+	Mat bw;
+	cvtColor(src, bw, CV_BGR2GRAY);
+	blur(bw, bw, cv::Size(3, 3));
+	Mat bl;
+	//Sobel( bw, bw, bw.depth(), 0, 1, 3 );
+	black_top_hat(bw, bl, Mat::ones(9, 9, CV_8U) );
+	Canny(bl, bl, 100, 100, 3);
+	std::vector<cv::Vec4i> lines;
+	HoughLinesP(bl, lines, 1, CV_PI/180, 70, 30, 10);
+	for( size_t i = 0; i < lines.size(); i++ )
+	{
+		line( src, Point(lines[i][0], lines[i][1]),
+			Point(lines[i][2], lines[i][3]), Scalar(0,0,255), 3, 8 );
+	}
+	//light
+	//bitwise_and(src_mask, src_hls, src_light);
+
+	cout << "src_RGB_1_1:" << src.at<cv::Vec3b>(1,1) << endl;
+	cout << "src_RGB_1_2:" << src.at<cv::Vec3b>(1,2) << endl;
+
+
+	cout << "src_hsl_1_1:" << src_hls.at<cv::Vec3b>(1,1) << endl;
+	cout << "src_hsl_1_2:" << src_hls.at<cv::Vec3b>(1,2) << endl;
+
+	//removeDarkBlue(src, res);
+	//removeBlue(res, res2);
+	//removeLightBlue(res2, res3);
 	namedWindow( "Source", CV_WINDOW_AUTOSIZE );
 	imshow( "Source", src );
-	namedWindow( "remove_green", CV_WINDOW_AUTOSIZE );
-	imshow( "remove_green", res3 );
+	namedWindow( "hsl", CV_WINDOW_AUTOSIZE );
+	imshow( "hsl", src_hls );
+	namedWindow( "mask", CV_WINDOW_AUTOSIZE );
+	imshow( "mask",bl );
+
 	//test
 
 	//bitwise_and(src, mask, src);
@@ -172,4 +202,4 @@ int main( int argc, char** argv )
 
   waitKey(0);
   return(0);
-}
+}*/
