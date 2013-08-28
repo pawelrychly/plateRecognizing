@@ -8,8 +8,9 @@
 #include <iostream>
 #include <stdio.h>
 #include <math.h>
-cv::Point2f center(0,0);
 using namespace cv;
+cv::Point2f center(0,0);
+
 cv::Point2f computeIntersect(cv::Vec4i a,
                              cv::Vec4i b)
 {
@@ -270,7 +271,7 @@ std::vector<cv::Vec4i> find_candidates(std::vector<cv::Vec4i> lines, Mat &src, f
 	return results;
 }
 
-int main( int argc, char** argv )
+int temp(char** argv)//main( int argc, char** argv )
 {
 	cv::Mat src = cv::imread(argv[1]);
     cv::Mat test1;
