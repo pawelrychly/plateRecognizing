@@ -33,8 +33,9 @@ private:
 	bool is_horizontal_rectangle(RotatedRect rect);
 	Mat get_subimage(RotatedRect rect, Mat src);
 	bool is_subarea_of_another_candidate(std::vector<RotatedRect> candidates, RotatedRect rect);
-	bool is_subarea_of(RotatedRect rect1, RotatedRect rect2)
+	bool is_subarea_of(RotatedRect rect1, RotatedRect rect2);
 	std::vector<Mat> filter_candidates(std::vector<Mat> candidatesMat);
+	bool is_rectangle_in_mat(RotatedRect rect, Mat mat);
 };
 
 #endif /* PLATEFINDER_H_ */

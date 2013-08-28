@@ -240,14 +240,18 @@ std::vector<Mat> PlateFinder::find_plates(){
 	for (unsigned i = 0; i < candidates.size(); i++) {
 		candidatesMat.push_back(get_subimage(candidates[i], src));
 	}
+
 	namedWindow( "candidates", CV_WINDOW_AUTOSIZE );
 	imshow( "candidates",src );
 
 	std::cout << candidatesMat.size();
 	candidatesMat = filter_candidates(candidatesMat);
 
-
-	cv::waitKey();
+	for (unsigned i = 0; i < candidatesMat.size(); i++) {
+		namedWindow( "can", CV_WINDOW_AUTOSIZE );
+		imshow( "can",candidatesMat[i] );
+		cv::waitKey();
+	}
 	return candidatesMat;
 	//cv::HoughLinesP(bw, lines, 1, CV_PI/180, 40, 40, 10);//CV_PI/180
 
@@ -329,12 +333,10 @@ std::vector<Mat> PlateFinder::filter_candidates(std::vector<Mat> candidatesMat) 
 
 	std::cout<< "START" << std::endl;
 	std::vector<Mat> goodCandidates;
+
 	std::vector<cv::Vec4i> lines;
-	int scale = 1;
-	int delta = 0;
-	int ddepth = CV_8U;
 	for (unsigned i = 0; i < candidatesMat.size(); i++) {
-		namedWindow( "Candidate1", CV_WINDOW_AUTOSIZE );
+		//namedWindow( "Candidate1", CV_WINDOW_AUTOSIZE );
 
 		Mat img = candidatesMat[i];
 		Mat bw;
@@ -342,12 +344,12 @@ std::vector<Mat> PlateFinder::filter_candidates(std::vector<Mat> candidatesMat) 
 
 		cv::cvtColor(img, bw, CV_BGR2GRAY);
 		//cv::blur(bw, bw, cv::Size(1,5));
+		//medianBlur(bw, bw, 3);
+		//namedWindow( "a1", CV_WINDOW_AUTOSIZE );
+		//imshow( "a1",bw );
 		medianBlur(bw, bw, 3);
-		namedWindow( "a1", CV_WINDOW_AUTOSIZE );
-		imshow( "a1",bw );
-		medianBlur(bw, bw, 3);
-		namedWindow( "a2", CV_WINDOW_AUTOSIZE );
-		imshow( "a2",bw );
+		//namedWindow( "a2", CV_WINDOW_AUTOSIZE );
+		//imshow( "a2",bw );
 		bw = bw * 2;
 		threshold(bw, bw, 200, 255, THRESH_BINARY);
 		open_img(bw, bw, Mat::ones(2,2,CV_8U), Point(-1,1), 1 );
@@ -362,6 +364,8 @@ std::vector<Mat> PlateFinder::filter_candidates(std::vector<Mat> candidatesMat) 
 		imshow( "a3",bw );
 		findContours( bw, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 		//cv::cvtColor(bw, bw, CV_GRAY2BGR);
+
+		std::vector<RotatedRect> founded;
 		Mat new_bw = Mat::zeros(bw.size(), CV_8U);
 		cv::cvtColor(new_bw, new_bw, CV_GRAY2BGR);
 		vector<RotatedRect> minRect( contours.size() );
@@ -377,77 +381,84 @@ std::vector<Mat> PlateFinder::filter_candidates(std::vector<Mat> candidatesMat) 
 
 
 
-		   if ((width > (bw.cols * 0.5f)) && (height > (bw.rows * 0.5f) )) {
-
-			   std::cout << width << "--";
-			   std::cout << minRect[j].angle << std::endl;
-			   for( int k = 0; k < 4; k++ )
-			   {
-				   line( new_bw, rect_points[k], rect_points[(k+1)%4],  CV_RGB(255,0,0), 1, 8 );
-
-			   }
-
+		   if ((width > (bw.cols * 0.3f)) && (height > (bw.rows * 0.3f) ) && is_rectangle_in_mat(minRect[j], bw)) {
+			   founded.push_back(minRect[j]);
 		   }
 		   			//drawContours( new_bw, contours, i, CV_RGB(100,180,180), 2, 8, hierarchy, 0, Point() );
 		}
 
-		namedWindow( "contours", CV_WINDOW_AUTOSIZE );
-		imshow( "contours",new_bw );
+		//Usuwanie obszarow zawierajacych mniejsze obszary - zostawienie mozliwie najdokladniejszego oszacowania pozycji tablicy
+		std::vector<RotatedRect> candidates_temp;
+		std::cout<<founded.size();
+		bool checked_flags[founded.size()];
+		for (unsigned l = 0; l < founded.size(); l++) {
+			checked_flags[l] = false;
+		}
+		for (unsigned l = 0; l < founded.size(); l++) {
+			bool smaller_exist = false;
+			RotatedRect rect1 = founded[l];
+
+			for (unsigned m = 0; m < founded.size(); m++ ) {
+				if (l != m) {
+					if (checked_flags[m] == false) {
+						RotatedRect rect2 = founded[m];
+						if (is_subarea_of(rect2, rect1)) {
+							checked_flags[l] = true;
+							std::cout <<"TRUE";
+							std::cout << "area:" << rect1.size << " subarea:  " << rect2.size << std::endl;
+
+							smaller_exist = true;
+							break;
+						}
+					}
+				}
+			}
+			if (!smaller_exist) {
+				candidates_temp.push_back(rect1);
+			}
+		}
+
+		for( unsigned j = 0; j< candidates_temp.size(); j++ ) {
+
+		   Point2f rect_points[4];
+		   candidates_temp[j].points( rect_points );
+		   for( unsigned k = 0; k < 4; k++ )
+ 		   {
+
+		        line( new_bw, rect_points[k], rect_points[(k+1)%4],  CV_RGB(255,0,0), 1, 8 );
+
+		   }
+				   			//drawContours( new_bw, contours, i, CV_RGB(100,180,180), 2, 8, hierarchy, 0, Point() );
+		}
 
 
 
+		for (unsigned i = 0; i < candidates_temp.size(); i++) {
+			goodCandidates.push_back(get_subimage(candidates_temp[i], img));
+		}
+		candidates_temp.clear();
+		//namedWindow( "contours", CV_WINDOW_AUTOSIZE );
+		//imshow( "contours",new_bw );
 
-
-
-
-
-		//cv::Sobel( bw, bw, ddepth, 1, 0, 3, scale, delta, cv::BORDER_DEFAULT );
-		//bw = bw * 2;
-
-		//bw = bw * 2;
-		//cv::blur(bw, bw, cv::Size(2,3));
-		//dilate(bw, bw, Mat::ones(2, 5, CV_8U), Point(-1,1), 2);
-		//close_img(bw, bw, Mat::ones(5,5,CV_8U), Point(-1,1), 1 );
-		//open_img(bw, bw, Mat::ones(5,5,CV_8U), Point(-1,1), 1 );
-		//cv::blur(bw, bw, cv::Size(10,2));
-		//bw = bw * 2;
-		//cv::Canny(bw, bw, 50, 250, 3, true);
-		//dilate(bw, bw, Mat::ones(4, 10, CV_8U), Point(-1,1), 4);
-
-		//dilate(bw, bw, Mat::ones(2, 5, CV_8U), Point(-1,1), 2);
-		//threshold(bw, bw, 150, 255, THRESH_BINARY);
-		//dilate(bw, bw, Mat::ones(2, 5, CV_8U), Point(-1,1), 2);
-		//bw = bw * 2;
-		//medianBlur(bw, bw, 5);
-		//threshold(bw, bw, 200, 255, THRESH_BINARY);
-		//Mat new_bw = img.clone();
-		//equalizeHist( bw, bw );
-		//cv::blur(bw, bw, cv::Size(3,3));
-		//cv::Sobel( bw, bw, ddepth, 1, 0, 3, scale, delta, cv::BORDER_DEFAULT );
-		//dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 1);
-		//dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 10);
-		//medianBlur(bw, bw, 5);
-		//cv::blur(bw, bw, cv::Size(3,3));
-		//threshold(bw, bw, 240, 255, THRESH_BINARY);
-		//dilate(bw, bw, Mat::ones(5, 2, CV_8U), Point(-1,1), 3);
-		//namedWindow( "a1", CV_WINDOW_AUTOSIZE );
-		//imshow( "a1",bw );
-		//cv::Canny(bw, bw, 10, 250, 3, true);
-		//medianBlur(bw, bw,3);
-		//dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 1);
-
-			//namedWindow( "a2", CV_WINDOW_AUTOSIZE );
-			//imshow( "a2",new_bw );
-
-			//imshow( "Candidate1",bw );
-			cv::waitKey();
-			destroyWindow("Candidate1");
-			destroyWindow("a1");
-			destroyWindow("a2");
-			lines.clear();
 	}
 	return goodCandidates;
 }
+
+bool PlateFinder::is_rectangle_in_mat(RotatedRect rect, Mat mat) {
+
+	Point2f rect_points[4];
+	rect.points( rect_points );
+	for (int i = 0; i < 4; i++) {
+		if ((rect_points[i].x > mat.cols) || (rect_points[i].x < 0)
+				|| (rect_points[i].y > mat.rows) || (rect_points[i].y < 0)) {
+
+			return false;
+		}
+	}
+	return true;
+
+}
+
 
 bool PlateFinder::is_horizontal_rectangle(RotatedRect rect) {
 
@@ -647,12 +658,47 @@ Mat PlateFinder::get_subimage(RotatedRect rect, Mat src) {
 
 bool PlateFinder::is_subarea_of(RotatedRect rect1, RotatedRect rect2) {
 
+	Point2f rect_points[4];
+	rect1.points(rect_points);
 
+	Point2f candidate_points[4];
+	rect2.points( candidate_points );
+	std::vector<Point2f> cont;
+	for (int i = 0; i <= 3; i++) {
+		cont.push_back(candidate_points[i]);
+	}
+	bool is_in = true;
+
+	for (unsigned i = 0; i <= 3; i++) {
+
+
+		if (pointPolygonTest(cont, rect_points[i], false) < 0) {
+			is_in = false;
+		}
+	}
+	if (is_in) {
+		return true;
+	}
+	return false;
+}
+
+bool PlateFinder::is_subarea_of_another_candidate(std::vector<RotatedRect> candidates, RotatedRect rect) {
+
+
+	for (unsigned j = 0; j < candidates.size(); j++ ) {
+
+		if (is_subarea_of(rect, candidates[j])) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
+/*
 bool PlateFinder::is_subarea_of_another_candidate(std::vector<RotatedRect> candidates, RotatedRect rect) {
-	std::cout << "O" << std::endl;
+
 	Point2f rect_points[4];
 	rect.points(rect_points);
 
@@ -679,5 +725,5 @@ bool PlateFinder::is_subarea_of_another_candidate(std::vector<RotatedRect> candi
 
 	return false;
 }
-
+*/
 
