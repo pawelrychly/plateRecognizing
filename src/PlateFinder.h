@@ -7,11 +7,14 @@
 
 #ifndef PLATEFINDER_H_
 #define PLATEFINDER_H_
+
+
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <stdio.h>
 #include <math.h>
+
 using namespace cv;
 
 class PlateFinder {

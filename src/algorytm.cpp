@@ -9,10 +9,15 @@
 #include <stdio.h>
 #include <math.h>
 #include "PlateFinder.h"
+
+
 using namespace cv;
+
 
 int main( int argc, char** argv )
 {
+	std::cout << "VERSION";
+
 	PlateFinder plateFinder = PlateFinder(argv[1]);
 	plateFinder.find_plates();
 
