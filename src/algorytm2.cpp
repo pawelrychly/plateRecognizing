@@ -223,7 +223,7 @@ std::vector<cv::Vec4i> find_candidates(std::vector<cv::Vec4i> lines, Mat &src, f
 
 
 				if (has_similar_length(p1, p2, p3, p4, precision)) {  //lines are similar
-					//Czy któtsze boki s¹ podobne
+					//Czy ktï¿½tsze boki sï¿½ podobne
 					bool is_similar_to_rectangle = false;
 					float avg_long_dist = (distance(p1, p2) + distance(p3,p4) /1.0f);
 					float avg_short_dist = 1.0f;

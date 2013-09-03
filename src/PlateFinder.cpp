@@ -2,7 +2,7 @@
  * PlateFinder.cpp
  *
  *  Created on: 15-08-2013
- *      Author: Pawe³
+ *      Author: Paweï¿½
  */
 
 #include "PlateFinder.h"
@@ -248,8 +248,46 @@ std::vector<Mat> PlateFinder::find_plates(){
 	candidatesMat = filter_candidates(candidatesMat);
 
 	for (unsigned i = 0; i < candidatesMat.size(); i++) {
-		namedWindow( "can", CV_WINDOW_AUTOSIZE );
-		imshow( "can",candidatesMat[i] );
+		Mat bw = candidatesMat[i].clone();
+		cv::cvtColor(bw, bw, CV_BGR2GRAY);
+
+		//cv::Sobel( bw, bw, ddepth, 1, 0, 3, scale, delta, cv::BORDER_DEFAULT );
+		namedWindow( "new1", CV_WINDOW_AUTOSIZE );
+		imshow( "new1", bw );
+		//medianBlur(bw, bw, 3);
+		equalizeHist( bw, bw );
+		namedWindow( "new2", CV_WINDOW_AUTOSIZE );
+		imshow( "new2", bw );
+		//bw = bw * 2;
+		//medianBlur(bw, bw, 3);
+		//threshold(bw, bw, 180, 255, THRESH_BINARY);
+		erode(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 1);
+		dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 1);
+		//cv::blur(bw, bw, cv::Size(3,3));
+		namedWindow( "new3", CV_WINDOW_AUTOSIZE );
+		imshow( "new3", bw );
+		///open_img(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 2 );
+
+		//dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 1);
+		//cv::Canny(bw, bw, 50, 250, 3, true);
+		//threshold(bw, bw, 220, 255, THRESH_BINARY);
+		namedWindow( "new4", CV_WINDOW_AUTOSIZE );
+				imshow( "new4", bw );
+
+		/*
+		 medianBlur(bw, bw, 3);
+		//namedWindow( "a2", CV_WINDOW_AUTOSIZE );
+		//imshow( "a2",bw );
+		bw = bw * 2;
+		threshold(bw, bw, 200, 255, THRESH_BINARY);
+		open_img(bw, bw, Mat::ones(2,2,CV_8U), Point(-1,1), 1 );
+		close_img(bw, bw, Mat::ones(2,2,CV_8U), Point(-1,1), 1 );
+		cv::Canny(bw, bw, 50, 250, 3, true);
+		 */
+
+
+
+		imshow( "can", candidatesMat[i] );
 		cv::waitKey();
 	}
 	return candidatesMat;
@@ -557,7 +595,7 @@ std::vector<cv::Vec4i> PlateFinder::find_candidates(std::vector<cv::Vec4i> lines
 
 
 				if (has_similar_length(p1, p2, p3, p4, precision)) {  //lines are similar
-					//Czy któtsze boki s¹ podobne
+					//Czy ktï¿½tsze boki sï¿½ podobne
 					bool is_similar_to_rectangle = false;
 					float avg_long_dist = (distance(p1, p2) + distance(p3,p4) /1.0f);
 					float avg_short_dist = 1.0f;
