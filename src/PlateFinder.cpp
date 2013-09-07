@@ -251,29 +251,78 @@ std::vector<Mat> PlateFinder::find_plates(){
 		Mat bw = candidatesMat[i].clone();
 		cv::cvtColor(bw, bw, CV_BGR2GRAY);
 
+		cv::blur(bw, light, cv::Size(70, 5));
+		bw = 2.0 *bw;
+
+		namedWindow( "blur", CV_WINDOW_AUTOSIZE );
+		imshow( "blur", bw );
+
+		erode(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1),1);
+		medianBlur(bw, bw, 3);
+		//equalizeHist( bw, bw );
+		//threshold(bw, bw, 235, 255, THRESH_BINARY);
+		//open_img(bw, bw, Mat::ones(4,2,CV_8U), Point(-1,1), 1 );
+		//cv::Canny(bw, bw, 10, 250, 3, true);
+		equalizeHist( bw, bw );
 		//cv::Sobel( bw, bw, ddepth, 1, 0, 3, scale, delta, cv::BORDER_DEFAULT );
 		namedWindow( "new1", CV_WINDOW_AUTOSIZE );
 		imshow( "new1", bw );
-		//medianBlur(bw, bw, 3);
-		equalizeHist( bw, bw );
+		/*imshow( "new1", bw );
+		medianBlur(bw, bw, 3);
+		cv::blur(bw, light, cv::Size(70, 5));
+		medianBlur(light, light, 3);
+
+		namedWindow( "light", CV_WINDOW_AUTOSIZE );
+
+		imshow( "light", light );
+
+
+
+		bw = bw - 0.9  * light;
+		//erode(bw, bw, Mat::ones(3, 2, CV_8U), Point(-1,1),2);
+
+	    equalizeHist( bw, bw );
+		close_img(bw, bw, Mat::ones(4,2,CV_8U), Point(-1,1), 1 );
 		namedWindow( "new2", CV_WINDOW_AUTOSIZE );
 		imshow( "new2", bw );
-		//bw = bw * 2;
+		bw = bw * 2.0;
+
 		//medianBlur(bw, bw, 3);
 		//threshold(bw, bw, 180, 255, THRESH_BINARY);
-		erode(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 1);
-		dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 1);
+
+		//erode(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1),3);
+		//dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1),3);
 		//cv::blur(bw, bw, cv::Size(3,3));
 		namedWindow( "new3", CV_WINDOW_AUTOSIZE );
 		imshow( "new3", bw );
-		///open_img(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 2 );
+		///dilate(bw, bw, Mat::ones(3, 2, CV_8U), Point(-1,1),2);
+		//medianBlur(bw, bw, 3);
 
+		erode(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1),2);
+		cv::blur(bw, bw, cv::Size(2,2));
+		close_img(bw, bw, Mat::ones(2,2,CV_8U), Point(-1,1), 1 );
+		dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1),2);
+		//medianBlur(bw, bw, 3);
+		open_img(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 2 );
+		//cv::blur(bw, bw, cv::Size(5,2));
 		//dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 1);
 		//cv::Canny(bw, bw, 50, 250, 3, true);
-		//threshold(bw, bw, 220, 255, THRESH_BINARY);
+		//threshold(bw, bw, 180, 255, THRESH_BINARY);
 		namedWindow( "new4", CV_WINDOW_AUTOSIZE );
 				imshow( "new4", bw );
+		//dilate(bw, bw, Mat::ones(3, 2, CV_8U), Point(-1,1),2);
+		equalizeHist( bw, bw );
+		close_img(bw, bw, Mat::ones(4,2,CV_8U), Point(-1,1), 1 );
+		open_img(bw, bw, Mat::ones(2,2,CV_8U), Point(-1,1), 1 );
+		namedWindow( "new5", CV_WINDOW_AUTOSIZE );
+		imshow( "new5", bw );
+		//bw = bw * 2.0;
+		//erode(bw, bw, Mat::ones(3, 2, CV_8U), Point(-1,1),2);
+		threshold(bw, bw, 120, 255, THRESH_BINARY);
 
+		namedWindow( "binary", CV_WINDOW_AUTOSIZE );
+		imshow( "binary", bw );
+		*/
 		/*
 		 medianBlur(bw, bw, 3);
 		//namedWindow( "a2", CV_WINDOW_AUTOSIZE );

@@ -1,8 +1,5 @@
 
-/**
- * Automatic perspective correction for quadrilateral objects. See the tutorial at
- * http://opencv-code.com/tutorials/automatic-perspective-correction-for-quadrilateral-objects/
- */
+
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
