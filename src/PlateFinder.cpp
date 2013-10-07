@@ -7,6 +7,8 @@
 
 #include "PlateFinder.h"
 
+using namespace tesseract;
+
 PlateFinder::PlateFinder(string file_name) {
 	this->src = cv::imread(file_name);
 }
@@ -267,6 +269,27 @@ std::vector<Mat> PlateFinder::find_plates(){
 		//cv::Sobel( bw, bw, ddepth, 1, 0, 3, scale, delta, cv::BORDER_DEFAULT );
 		namedWindow( "new1", CV_WINDOW_AUTOSIZE );
 		imshow( "new1", bw );
+
+		/* OCR
+        TessBaseAPI *myOCR = new TessBaseAPI();
+
+		if (myOCR->Init(NULL, "eng")) {
+			printf("Could not initialize tesseract.\n");
+			exit(1);
+		}
+
+		myOCR->SetVariable( "tessedit_char_whitelist", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" );
+		myOCR->TesseractRect(bw.data,1,bw.step1(),0,0,bw.cols,bw.rows);
+		const char * text1=myOCR->GetUTF8Text();
+
+		string t1(text1);
+		printf("Text:\n");
+		printf("%s",t1.c_str());
+
+		delete myOCR;
+         
+         */
+
 		/*imshow( "new1", bw );
 		medianBlur(bw, bw, 3);
 		cv::blur(bw, light, cv::Size(70, 5));

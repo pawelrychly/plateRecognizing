@@ -14,6 +14,10 @@
 #include <iostream>
 #include <stdio.h>
 #include <math.h>
+/* OCR
+#include <tesseract/baseapi.h>
+#include <leptonica/allheaders.h>
+ */
 
 using namespace cv;
 
