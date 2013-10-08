@@ -29,6 +29,8 @@ public:
 	std::vector<Mat> find_plates();
 private:
 	Mat src;
+	void removeDarkBlue(Mat src, Mat &res);
+	void removeBlue(Mat src, Mat &res);
 	void close_img(Mat src, Mat &dst, Mat element, Point point, int iterations);
 	void white_top_hat(Mat src, Mat &dst, Mat element );
 	void black_top_hat(Mat src, Mat &dst, Mat element );
@@ -41,6 +43,7 @@ private:
 	Mat get_subimage(RotatedRect rect, Mat src);
 	bool is_subarea_of_another_candidate(std::vector<RotatedRect> candidates, RotatedRect rect);
 	bool is_subarea_of(RotatedRect rect1, RotatedRect rect2);
+	Mat remove_frame(Mat table);
 	std::vector<Mat> filter_candidates(std::vector<Mat> candidatesMat);
 	bool is_rectangle_in_mat(RotatedRect rect, Mat mat);
 };
