@@ -379,6 +379,7 @@ std::vector<Mat> PlateFinder::find_plates(){
 
 //#TRESH DATA
 		bw = thresh_plate(bw);
+		bw = remove_frame(bw);
 		/*for(int a = 0; a < bw.cols; a++)
 		{
 			for (int b=0; b < bw.rows; b++) {
@@ -388,9 +389,9 @@ std::vector<Mat> PlateFinder::find_plates(){
 //##
 
 		//threshold(bw, bw, 235, 255, THRESH_BINARY);
-		bitwise_or(bw, result, bw);
+		//bitwise_or(bw, result, bw);
 		//cv::Sobel( bw, bw, ddepth, 1, 0, 3, scale, delta, cv::BORDER_DEFAULT );
-		bw = remove_frame(bw);
+		//bw = remove_blue_element(bw);
 		//namedWindow( "new1", CV_WINDOW_AUTOSIZE );
 		//imshow( "new1", bw );
 		//
@@ -460,6 +461,7 @@ std::vector<Mat> PlateFinder::find_plates(){
 	return candidates;*/
 }
 
+
 Mat PlateFinder::thresh_plate(Mat src) {
 	double size = (double) src.cols * (double) src.rows;
 	double sum = 0;
@@ -476,54 +478,125 @@ Mat PlateFinder::thresh_plate(Mat src) {
 	//int thresh = 150 + ((avg/255.0) * 105);
 	std::cout <<"thresh: ";
 	std::cout << thresh << std::endl;
-
-	namedWindow( "before thresh", CV_WINDOW_AUTOSIZE );
-	imshow( "before thresh", src );
 	threshold(src, src, thresh, 255, THRESH_BINARY);
+	namedWindow( "before close", CV_WINDOW_AUTOSIZE );
+	imshow( "before close", src );
+	medianBlur(src, src, 5);
+/*
 	namedWindow( "after thresh", CV_WINDOW_AUTOSIZE );
-	imshow( "after thresh", src );
+	imshow( "after thresh", src );*/
 	return src;
 }
 
-Mat PlateFinder::remove_frame(Mat table) {
-	//int scale = 1;
-	//int delta = 0;
-	//int ddepth = CV_8U;
 
-	Mat filter_element = table.clone();
-	//dilate(filter_element, filter_element, Mat::ones(3, 3, CV_8U), Point(-1,1), 1);
+void PlateFinder::remove_neighborhood(Mat &src, int x, int y) {
+	int right_x = src.cols * 19/20.0;
+	int left_x = src.cols * 1/10.0;
+	int top_y = src.rows * 1/10.0;
+	int bottom_y = src.rows * 8/10.0;
 
-	//threshold(filter_element, filter_element, 235, 255, THRESH_BINARY);
-	//close_img(filter_element, filter_element, Mat::ones(3,3,CV_8U), Point(-1,1), 3 );
-    //open_img(filter_element, filter_element, Mat::ones(2,10,CV_8U) , Point(-1,1), 3 );
-	//medianBlur(filter_element, filter_element, 21);
-	//int height_of_pl = filter_element.rows / 5;
-	//dilate(filter_element, filter_element, Mat::ones(height_of_pl, 2, CV_8U), Point(-1,1), 1);
-	//cv::blur(filter_element, filter_element, cv::Size(5, 3));
-	//cv::Canny(filter_element, filter_element, 50, 200, 3, true);
-	//dilate(filter_element, filter_element, Mat::ones(16, 4, CV_8U), Point(-1,1), 1);
-	//erode(filter_element, filter_element, Mat::ones(16, 4, CV_8U), Point(-1,1), 1);
+	if ((src.at<unsigned char>(y,x) == 0) &&
+		((x > right_x) || ( x < left_x ) ||
+			(y > bottom_y) || (y < top_y)))
+		{
+		src.at<unsigned char>(y,x) = 255;
+		if (x > 0) {
+			remove_neighborhood(src, x-1, y);
+		}
+		if (x < (src.cols -1)) {
+			remove_neighborhood(src, x+1, y);
+		}
+		if (y > 0) {
+			remove_neighborhood(src, x, y-1);
+		}
+		if (y < (src.rows -1)) {
+			remove_neighborhood(src, x, y+1);
+		}
+	}
+	return;
+}
+/*
+void PlateFinder::mark_possible_ends_of_frame(Mat &src) {
+	int y = 0;
+	//int x = 0;
+	//detect top line
 
-	//cv::Sobel( filter_element, filter_element, ddepth, 1, 0, 3, scale, delta, cv::BORDER_DEFAULT );
-	//dilate(filter_element, filter_element, Mat::ones(2, 6, CV_8U), Point(-1,1), 1);
-	//std::vector<cv::Vec4i> lines;
-	//vector<vector<Point> > contours;
-	//vector<Vec4i> hierarchy;
-	//findContours( bw, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
-	//open_img(filter_element, filter_element, Mat::ones(height_of_pl,width_of_pl,CV_8U), Point(-1,1), 1 );
-	//erode(filter_element, filter_element, Mat::ones(height_of_pl, width_of_pl, CV_8U), Point(-1,1), 1);
-	//dilate(filter_element, filter_element, Mat::ones(height_of_pl, width_of_pl, CV_8U), Point(-1,1), 1);
-	//erode(filter_element, filter_element, Mat::ones(filter_element.rows , width_of_pl, CV_8U), Point(-1,1), 1);
-	//Sobel( filter_element, filter_element, filter_element.depth(), 1, 0, 9);
-	//close_img(filter_element, filter_element, Mat::ones(2,32,CV_8U), Point(-1,1), 1 );
+	Mat copy_of_src = src.clone();
+	//dilate(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1), 2);
+	//erode(copy_of_src, copy_of_src, Mat::ones(5, 9, CV_8U), Point(-1,1), 1);
+	//close_img(copy_of_src, copy_of_src, Mat::ones(9,9,CV_8U), Point(-1,1), 1 );
+	namedWindow( "copy", CV_WINDOW_AUTOSIZE );
+	imshow( "copy", copy_of_src );
 
-	//erode(filter_element, filter_element, Mat::ones(height_of_pl, 3, CV_8U), Point(-1,1), 1);
-	//dilate(filter_element, filter_element, Mat::ones(2, 5, CV_8U), Point(-1,1), 1);
-	//dilate(filter_element, filter_element, Mat::ones(32, 3, CV_8U), Point(-1,1), 1);
+
+	bool found = false;
+	int num_of_changes = 0;
+	unsigned char prev_init = src.at<unsigned char>(0,0);
+	unsigned char prev = prev_init;
+	while ((!found) && (y < src.rows)) {
+		num_of_changes = 0;
+		for(int a = 0; a< copy_of_src.cols; a++) {
+			if (copy_of_src.at<unsigned char>(y, a) != prev) {
+				num_of_changes++;
+			}
+			prev = copy_of_src.at<unsigned char>(y, a);
+		}
+		if (num_of_changes > 7) {  //draw vertical line
+			for(int a = 0; a< src.cols; a++) {
+				src.at<unsigned char>(y, a) = 255;
+			}
+			found = true;
+		}
+		y++;
+	}
+	found = false;
+	prev = prev_init;
+	y = src.rows-1;
+	while ((!found) && (y > 0)) {
+		num_of_changes = 0;
+		for(int a = 0; a< copy_of_src.cols; a++) {
+			if (copy_of_src.at<unsigned char>(y, a) != prev) {
+				num_of_changes++;
+			}
+			prev = copy_of_src.at<unsigned char>(y, a);
+		}
+		if (num_of_changes > 7) {  //draw vertical line
+			for(int a = 0; a< src.cols; a++) {
+				src.at<unsigned char>(y, a) = 255;
+			}
+			found = true;
+		}
+		y--;
+	}
+}
+*/
+Mat PlateFinder::remove_frame(Mat src) {
+	//y == 0
+	//y == max
+	for (int x = 0; x < src.cols; x++) {
+		remove_neighborhood(src, x, 0);
+		remove_neighborhood(src, x, src.rows-1);
+	}
+	//x == 0
+	//x == max
+	for (int y = 0; y < src.rows; y++) {
+		remove_neighborhood(src, 0, y);
+		remove_neighborhood(src, src.cols-1, y);
+	}
+
+
+	//mark_possible_ends_of_frame(src);
+	//remove_neighborhood(src, src.cols /2, 0);
+	//remove_neighborhood(src, src.cols /2, src.rows-1);
+/*	remove_neighborhood(src, 0, src.rows / 2);
+	remove_neighborhood(src, src.cols -1,  src.rows / 2 );
+*/
+	//Mat filter_element = table.clone();
+
 
 	namedWindow( "filter", CV_WINDOW_AUTOSIZE );
-	imshow( "filter", filter_element );
-	return filter_element;
+	imshow( "filter", src );
+	return src;
 }
 
 std::vector<Mat> PlateFinder::filter_candidates(std::vector<Mat> candidatesMat) {
@@ -861,9 +934,9 @@ Mat PlateFinder::get_subimage(RotatedRect rect, Mat src) {
 	float angle = rect.angle;
 	//float width = rect.size.width - 20.0f;
 	float width = rect.size.width;
-	if (width > 100) {
+	/*if (width > 100) {
 		width = width - (width / 12.0);
-	}
+	}*/
 	Size rect_size(width, rect.size.height);
 
 	if (rect.angle < -45.0f) {

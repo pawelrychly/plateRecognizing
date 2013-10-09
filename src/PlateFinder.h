@@ -43,10 +43,13 @@ private:
 	Mat get_subimage(RotatedRect rect, Mat src);
 	bool is_subarea_of_another_candidate(std::vector<RotatedRect> candidates, RotatedRect rect);
 	bool is_subarea_of(RotatedRect rect1, RotatedRect rect2);
-	Mat remove_frame(Mat table);
+	//Mat remove_blue_element(Mat table);
 	std::vector<Mat> filter_candidates(std::vector<Mat> candidatesMat);
 	bool is_rectangle_in_mat(RotatedRect rect, Mat mat);
 	Mat thresh_plate(Mat src);
+	Mat remove_frame(Mat table);
+	void remove_neighborhood(Mat &src, int x, int y);
+	void mark_possible_ends_of_frame(Mat &src);
 };
 
 #endif /* PLATEFINDER_H_ */
