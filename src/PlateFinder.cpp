@@ -380,6 +380,9 @@ std::vector<Mat> PlateFinder::find_plates(){
 //#TRESH DATA
 		bw = thresh_plate(bw);
 		bw = remove_frame(bw);
+		remove_small_object(bw);
+		namedWindow( "filter", CV_WINDOW_AUTOSIZE );
+		imshow( "filter", bw );
 		/*for(int a = 0; a < bw.cols; a++)
 		{
 			for (int b=0; b < bw.rows; b++) {
@@ -461,6 +464,44 @@ std::vector<Mat> PlateFinder::find_plates(){
 	return candidates;*/
 }
 
+void PlateFinder::remove_small_object(Mat &src) {
+	 Mat src_temp = src.clone();
+	 int area = src.rows * src.cols;
+	 vector<vector<Point> > contours;
+	 vector<vector<Point> > result_contours;
+	 vector<Vec4i> hierarchy;
+	 findContours( src_temp, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+
+	  //vector<vector<Point> > contours_poly( contours.size() );
+	  vector<Rect> boundRect( contours.size() );
+	  vector<float>radius( contours.size() );
+
+	  for(unsigned int i = 0; i < contours.size(); i++ )
+	  {
+		  boundRect[i] = boundingRect( Mat(contours[i]) );
+		  double object_area = boundRect[i].height * boundRect[i].width;
+		  if (object_area < (0.01 * area)) {
+			  result_contours.push_back(contours[i]);
+		  }
+		  /*approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );
+		  double area0 = contourArea(contour);
+		  //  boundRect[i] = boundingRect( Mat(contours_poly[i]) );
+
+		   */
+	  }
+
+	  /// Draw polygonal contour + bonding rects + circles
+	  //Mat drawing = Mat::zeros( src.size(), CV_8U);
+	  for( unsigned int i = 0; i<  result_contours.size(); i++ )
+	  {
+	      drawContours( src,  result_contours, i, 255, CV_FILLED, 8, vector<Vec4i>(), 0, Point() );
+	      //rectangle( drawing, boundRect[i].tl(), boundRect[i].br(), 255, 2, 8, 0 );
+	  }
+
+	  //bitwise_or(src, drawing, src);
+
+
+}
 
 Mat PlateFinder::thresh_plate(Mat src) {
 	double size = (double) src.cols * (double) src.rows;
@@ -480,8 +521,7 @@ Mat PlateFinder::thresh_plate(Mat src) {
 	std::cout << thresh << std::endl;
 	threshold(src, src, thresh, 255, THRESH_BINARY);
 	namedWindow( "before close", CV_WINDOW_AUTOSIZE );
-	imshow( "before close", src );
-	medianBlur(src, src, 5);
+
 /*
 	namedWindow( "after thresh", CV_WINDOW_AUTOSIZE );
 	imshow( "after thresh", src );*/
@@ -593,9 +633,6 @@ Mat PlateFinder::remove_frame(Mat src) {
 */
 	//Mat filter_element = table.clone();
 
-
-	namedWindow( "filter", CV_WINDOW_AUTOSIZE );
-	imshow( "filter", src );
 	return src;
 }
 

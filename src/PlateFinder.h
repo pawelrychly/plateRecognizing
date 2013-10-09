@@ -50,6 +50,7 @@ private:
 	Mat remove_frame(Mat table);
 	void remove_neighborhood(Mat &src, int x, int y);
 	void mark_possible_ends_of_frame(Mat &src);
+	void remove_small_object(Mat &src);
 };
 
 #endif /* PLATEFINDER_H_ */
