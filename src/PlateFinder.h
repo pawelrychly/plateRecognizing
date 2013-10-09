@@ -46,6 +46,7 @@ private:
 	Mat remove_frame(Mat table);
 	std::vector<Mat> filter_candidates(std::vector<Mat> candidatesMat);
 	bool is_rectangle_in_mat(RotatedRect rect, Mat mat);
+	Mat thresh_plate(Mat src);
 };
 
 #endif /* PLATEFINDER_H_ */

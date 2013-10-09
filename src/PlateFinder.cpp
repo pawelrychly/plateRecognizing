@@ -296,7 +296,7 @@ std::vector<Mat> PlateFinder::find_plates(){
 	namedWindow( "candidates", CV_WINDOW_AUTOSIZE );
 	imshow( "candidates",src );
 
-	std::cout << candidatesMat.size();
+	//std::cout << candidatesMat.size();
 	candidatesMat = filter_candidates(candidatesMat);
 
 	for (unsigned i = 0; i < candidatesMat.size(); i++) {
@@ -334,7 +334,7 @@ std::vector<Mat> PlateFinder::find_plates(){
 			int index = 0;
 			while ((b < result.rows) && (index < result.rows /10)) {
 				if (result.at<unsigned char>(b,a) > 0) {
-					std::cout << (int) result.at<unsigned char>(b,a) << ";";
+					//std::cout << (int) result.at<unsigned char>(b,a) << ";";
 					index++;
 				}
 				b++;
@@ -359,11 +359,13 @@ std::vector<Mat> PlateFinder::find_plates(){
 		//imshow( "darkblue", result2   );
 		cv::cvtColor(bw, bw, CV_BGR2GRAY);
 
+		/*namedWindow( "1 ", CV_WINDOW_AUTOSIZE );
+		imshow( "1 ", bw );
 		cv::blur(bw, light, cv::Size(70, 1));
 		bw = 2.0 *bw;
 
-		//namedWindow( "blur", CV_WINDOW_AUTOSIZE );
-		//imshow( "blur", bw );
+		namedWindow( "2 ", CV_WINDOW_AUTOSIZE );
+		imshow( "2 ", bw );
 
 		erode(bw, bw, Mat::ones(2, 2, CV_8U), Point(-1,1),1);
 		medianBlur(bw, bw, 3);
@@ -372,12 +374,25 @@ std::vector<Mat> PlateFinder::find_plates(){
 		//open_img(bw, bw, Mat::ones(4,2,CV_8U), Point(-1,1), 1 );
 		//cv::Canny(bw, bw, 10, 250, 3, true);
 		equalizeHist( bw, bw );
-		threshold(bw, bw, 235, 255, THRESH_BINARY);
+*/
+
+
+//#TRESH DATA
+		bw = thresh_plate(bw);
+		/*for(int a = 0; a < bw.cols; a++)
+		{
+			for (int b=0; b < bw.rows; b++) {
+				result.at<unsigned char>(b,a) = 255;
+			}
+		}*/
+//##
+
+		//threshold(bw, bw, 235, 255, THRESH_BINARY);
 		bitwise_or(bw, result, bw);
 		//cv::Sobel( bw, bw, ddepth, 1, 0, 3, scale, delta, cv::BORDER_DEFAULT );
 		bw = remove_frame(bw);
-		namedWindow( "new1", CV_WINDOW_AUTOSIZE );
-		imshow( "new1", bw );
+		//namedWindow( "new1", CV_WINDOW_AUTOSIZE );
+		//imshow( "new1", bw );
 		//
 		/* OCR
         TessBaseAPI *myOCR = new TessBaseAPI();
@@ -445,10 +460,35 @@ std::vector<Mat> PlateFinder::find_plates(){
 	return candidates;*/
 }
 
+Mat PlateFinder::thresh_plate(Mat src) {
+	double size = (double) src.cols * (double) src.rows;
+	double sum = 0;
+	for(int a = 0; a < src.cols; a++)
+	{
+		for (int b=0; b < src.rows; b++) {
+			sum = sum + (double) src.at<unsigned char>(b,a);
+		}
+	}
+	double avg = sum / size;
+	std::cout <<"avg: ";
+	std::cout << avg << std::endl;
+	int thresh = (int)avg;
+	//int thresh = 150 + ((avg/255.0) * 105);
+	std::cout <<"thresh: ";
+	std::cout << thresh << std::endl;
+
+	namedWindow( "before thresh", CV_WINDOW_AUTOSIZE );
+	imshow( "before thresh", src );
+	threshold(src, src, thresh, 255, THRESH_BINARY);
+	namedWindow( "after thresh", CV_WINDOW_AUTOSIZE );
+	imshow( "after thresh", src );
+	return src;
+}
+
 Mat PlateFinder::remove_frame(Mat table) {
-	int scale = 1;
-	int delta = 0;
-	int ddepth = CV_8U;
+	//int scale = 1;
+	//int delta = 0;
+	//int ddepth = CV_8U;
 
 	Mat filter_element = table.clone();
 	//dilate(filter_element, filter_element, Mat::ones(3, 3, CV_8U), Point(-1,1), 1);
